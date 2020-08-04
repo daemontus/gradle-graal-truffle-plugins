@@ -1,0 +1,79 @@
+package com.oracle.truffle.gradle;
+
+import org.gradle.testkit.runner.BuildResult;
+import org.gradle.testkit.runner.GradleRunner;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+public class GraalCompilerPluginFunctionalTest {
+
+    @Test
+    public void canRunConfig() throws IOException {
+        File projectDir = new File("build/testProject");
+        Files.createDirectories(projectDir.toPath());
+        Files.writeString(Path.of(projectDir.getAbsolutePath(), "settings.gradle"),
+                ""
+        );
+        Files.writeString(Path.of(projectDir.getAbsolutePath(), "build.gradle"),
+                "plugins { \n" +
+                        "id 'java-library'\n" +
+                        "id 'application'\n" +
+                        "id 'org.graalvm.plugin.compiler'\n" +
+                    "}\n" +
+                    "repositories { jcenter() }\n" +
+                    "application { mainClassName 'package.Main' }\n" +
+                    "graal { version '20.1.0' }\n" +
+                    "dependencies { language 'org.graalvm.js:js:20.1.0' }\n" +
+                    "task runApp(type: JavaExec) {\n" +
+                        "classpath = sourceSets.main.runtimeClasspath\n" +
+                        "main = 'package.Main'\n" +
+                    "}\n"
+        );
+
+        // Run the build
+        GradleRunner runner = GradleRunner.create();
+        runner.forwardOutput();
+        runner.withPluginClasspath();
+        runner.withArguments("prepareCompiler", "installDist");
+        runner.withProjectDir(projectDir);
+        BuildResult result = runner.build();
+
+        File projectBuildDir = new File(projectDir, "build");
+        assertTrue(projectBuildDir.exists() && projectBuildDir.isDirectory());
+
+        File compilerDir = new File(projectBuildDir, "graalCompiler");
+        assertTrue(compilerDir.exists() && compilerDir.isDirectory());
+        assertTrue(Objects.requireNonNull(compilerDir.listFiles()).length > 0);
+
+        File installDir = new File(projectBuildDir, "install");
+        assertTrue(installDir.exists() && installDir.isDirectory());
+
+        File distributionDir = new File(installDir, "testProject");
+        assertTrue(distributionDir.exists() && distributionDir.isDirectory());
+
+        File distCompilerDir = new File(distributionDir, "graalCompiler");
+        assertTrue(distCompilerDir.exists() && distCompilerDir.isDirectory());
+        assertTrue(Objects.requireNonNull(distCompilerDir.listFiles()).length > 0);
+
+        File distBinDir = new File(distributionDir, "bin");
+        assertTrue(distBinDir.exists() && distBinDir.isDirectory());
+
+        File distStartScript = new File(distBinDir, "testProject");
+        assertTrue(distStartScript.exists() && !distStartScript.isDirectory());
+        String startScript = Files.readString(distStartScript.toPath());
+        assertTrue(startScript.contains("--upgrade-module-path=$APP_HOME/graalCompiler/"));
+        assertTrue(startScript.contains("-Dtruffle.class.path.append=$APP_HOME/lib/js-20.1.0.jar"));
+
+        assertFalse(result.getOutput().contains("WARNING"));
+    }
+
+
+}
