@@ -27,10 +27,12 @@ gradlePlugin {
             description = 'Automatically enable Graal compiler on Hotspot JVMs and in distributions. Allow truffle languages as project dependencies.'
             implementationClass = 'com.oracle.truffle.gradle.CompilerPlugin'
         }
-        /*create("native-image") { plugin ->
+        create("native-image") { plugin ->
             id = 'org.graalvm.plugin.native-image'
+            displayName = 'Graal Native Image Plugin'
+            description = 'Declare NativeImage tasks for building native binaries of Java applications.'
             implementationClass = "com.oracle.truffle.gradle.NativeImagePlugin"
-        }*/
+        }
     }
 }
 

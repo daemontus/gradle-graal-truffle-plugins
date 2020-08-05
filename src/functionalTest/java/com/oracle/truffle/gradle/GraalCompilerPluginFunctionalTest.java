@@ -28,7 +28,7 @@ public class GraalCompilerPluginFunctionalTest {
                 - installDist creates a distribution with the compiler included
                 - start scripts for the distribution initialize compiler and Graal JS
          */
-        File projectDir = new File("build/testProject");
+        File projectDir = new File("build/compilerTestProject");
         File settingsFile = new File(projectDir, "settings.gradle");
         File buildFile = new File(projectDir, "build.gradle");
         Files.createDirectories(projectDir.toPath());
@@ -67,7 +67,7 @@ public class GraalCompilerPluginFunctionalTest {
         File installDir = new File(projectBuildDir, "install");
         assertTrue(installDir.exists() && installDir.isDirectory());
 
-        File distributionDir = new File(installDir, "testProject");
+        File distributionDir = new File(installDir, "compilerTestProject");
         assertTrue(distributionDir.exists() && distributionDir.isDirectory());
 
         File distCompilerDir = new File(distributionDir, "graalCompiler");
@@ -77,7 +77,7 @@ public class GraalCompilerPluginFunctionalTest {
         File distBinDir = new File(distributionDir, "bin");
         assertTrue(distBinDir.exists() && distBinDir.isDirectory());
 
-        File distStartScript = new File(distBinDir, "testProject");
+        File distStartScript = new File(distBinDir, "compilerTestProject");
         assertTrue(distStartScript.exists() && !distStartScript.isDirectory());
         String startScript = new String(Files.readAllBytes(distStartScript.toPath()), Charset.defaultCharset());
         assertTrue(startScript.contains("--upgrade-module-path=$APP_HOME/graalCompiler/"));
