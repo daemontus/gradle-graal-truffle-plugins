@@ -243,7 +243,6 @@ public class NativeImage extends DefaultTask {
             if (name != null) {
                 args.add("-H:Name=" + name);
             }
-            System.out.println("Running native image with: "+args);
             exec.setArgs(args);
         });
     }
