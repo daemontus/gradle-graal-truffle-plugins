@@ -17,6 +17,17 @@ public class GraalCompilerPluginFunctionalTest {
 
     @Test
     public void canRunConfig() throws IOException {
+        /*
+            Create a fake test project which will:
+                - Load the Graal compiler plugin and application plugin
+                - Load a dependency on Graal JS
+                - Create a custom JavaExec task
+            Then verify that:
+                - version configuration works (no warnings)
+                - prepareCompiler is defined, executes and downloads compiler to expected location
+                - installDist creates a distribution with the compiler included
+                - start scripts for the distribution initialize compiler and Graal JS
+         */
         File projectDir = new File("build/testProject");
         Files.createDirectories(projectDir.toPath());
         Files.writeString(Path.of(projectDir.getAbsolutePath(), "settings.gradle"),

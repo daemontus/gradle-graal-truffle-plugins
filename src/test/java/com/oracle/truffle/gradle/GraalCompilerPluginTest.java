@@ -13,6 +13,7 @@ public class GraalCompilerPluginTest {
 
     @Test
     public void registersDownloadTask() {
+        /* Check that prepareCompiler is defined when compiler plugin is applied. */
         Project project = ProjectBuilder.builder().build();
         project.getPlugins().apply("org.graalvm.plugin.compiler");
 
@@ -21,6 +22,7 @@ public class GraalCompilerPluginTest {
 
     @Test
     public void extendsJavaExecTask() {
+        /* Check that a JavaExec task is enhanced to depend on prepareCompiler. */
         Project project = ProjectBuilder.builder().build();
         project.getPlugins().apply("org.graalvm.plugin.compiler");
         Task testExec = project.getTasks().create("testExec", JavaExec.class, task -> {
