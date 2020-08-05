@@ -1,6 +1,10 @@
 plugins {
     id 'java-gradle-plugin'
+    id 'maven-publish'
 }
+
+group = 'org.graalvm.plugin'
+version = '0.1.0-alpha01'
 
 repositories {
     jcenter()
