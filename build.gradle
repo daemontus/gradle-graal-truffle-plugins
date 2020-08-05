@@ -1,18 +1,17 @@
 plugins {
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'maven-publish'
 }
 
 group = 'org.graalvm.plugin'
 version = '0.1.0-alpha01'
 
-repositories {
-    jcenter()
-}
+repositories { jcenter() }
 
-dependencies {
-    testImplementation 'junit:junit:4.13'
-}
+java { sourceCompatibility JavaVersion.VERSION_1_8 }
+
+dependencies { testImplementation 'junit:junit:4.13' }
 
 pluginBundle {
     website = 'https://www.graalvm.org/'
