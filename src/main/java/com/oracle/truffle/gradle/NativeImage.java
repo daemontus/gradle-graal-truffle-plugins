@@ -58,6 +58,7 @@ public class NativeImage extends DefaultTask {
         this.outputDir.set(outputDir);
         this.classpath.from(getDefaultClasspath());
         this.setGroup("graal");
+        this.dependsOn("assemble"); // compile Java, Kotlin, whatever before running native image
     }
 
     /**
