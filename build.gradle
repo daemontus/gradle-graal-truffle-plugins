@@ -1,6 +1,6 @@
 plugins {
     id 'java-gradle-plugin'
-    id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '0.12.0'
 }
 
 group = 'org.graalvm.plugin'
@@ -14,12 +14,24 @@ dependencies {
     testImplementation 'junit:junit:4.13'
 }
 
+pluginBundle {
+    website = 'https://www.graalvm.org/'
+    vcsUrl = 'https://github.com/daemontus/gradle-graal-truffle-plugins'
+    tags = ['graal', 'compiler', 'native-image', 'truffle', 'language']
+}
+
 gradlePlugin {
     plugins {
         create("compiler") { plugin ->
             id = 'org.graalvm.plugin.compiler'
+            displayName = 'Graal Compiler Plugin'
+            description = 'Automatically enable Graal compiler on Hotspot JVMs and in distributions. Allow truffle languages as project dependencies.'
             implementationClass = 'com.oracle.truffle.gradle.CompilerPlugin'
         }
+        /*create("native-image") { plugin ->
+            id = 'org.graalvm.plugin.native-image'
+            implementationClass = "com.oracle.truffle.gradle.NativeImagePlugin"
+        }*/
     }
 }
 
