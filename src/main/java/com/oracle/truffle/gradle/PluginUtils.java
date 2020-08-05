@@ -57,7 +57,7 @@ class PluginUtils {
      * <p>A simple find-replace in a file (used to set-up jvm args in run scripts).</p>
      */
     static void replaceInFile(File f, String find, String replace) throws IOException {
-        String content = Files.readString(f.toPath(), Charset.defaultCharset());
+        String content = new String(Files.readAllBytes(f.toPath()), Charset.defaultCharset());
         content = content.replace(find, replace);
         Files.write(f.toPath(), content.getBytes(Charset.defaultCharset()));
     }
