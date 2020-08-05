@@ -12,10 +12,6 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        greeting {
-            id = 'com.oracle.truffle.gradle.greeting'
-            implementationClass = 'com.oracle.truffle.gradle.GradleGraalTrufflePluginsPlugin'
-        }
         create("compiler") { plugin ->
             id = 'org.graalvm.plugin.compiler'
             implementationClass = 'com.oracle.truffle.gradle.CompilerPlugin'
