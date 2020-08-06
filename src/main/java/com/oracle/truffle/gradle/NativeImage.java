@@ -1,6 +1,7 @@
 package com.oracle.truffle.gradle;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
@@ -57,6 +58,7 @@ public class NativeImage extends DefaultTask {
         File outputDir = new File(getProject().getBuildDir(), "nativeImage");
         this.outputDir.set(outputDir);
         this.classpath.from(getDefaultClasspath());
+        this.outputName.set(this.getName());
         this.setGroup("graal");
         this.dependsOn("assemble"); // compile Java, Kotlin, whatever before running native image
     }
@@ -122,13 +124,27 @@ public class NativeImage extends DefaultTask {
     }
 
     /**
+     * <p>Set the main jar of the compiled binary. This can be either a {@code Jar}
+     * task, or a file pointing to an executable jar.</p>
+     *
+     * @param jar A jar to be compiled.
+     */
+    public void setForJar(Object jar) {
+        if (jar instanceof Jar) {
+            this.setForJarTask((Jar) jar);
+        } else {
+            this.setForJarFile(jar);
+        }
+    }
+
+    /**
      * Set the main jar file of the compiled binary.
      *
      * If the jar file is set, you can't set the main class name.
      *
      * @param jarFile A jar file to be compiled and executed.
      */
-    public void setForJarFile(Object jarFile) {
+    private void setForJarFile(Object jarFile) {
         assertExecutableNotSet(jarFile);
         this.executable.set(getProject().file(jarFile));
     }
@@ -140,7 +156,7 @@ public class NativeImage extends DefaultTask {
      *
      * @param jarTask A task whose output is going to be used as
      */
-    public void setForJarTask(Jar jarTask) {
+    private void setForJarTask(Jar jarTask) {
         this.dependsOn(jarTask);
         setForJarFile(jarTask.getOutputs().getFiles().iterator().next());
     }
@@ -289,12 +305,21 @@ public class NativeImage extends DefaultTask {
     }
 
     private static String getNativeImagePath() {
-        return PluginUtils.getJavaHome() + "/bin/native-image";
+        String graalHome = PluginUtils.getGraalHome();
+        // Executing GraalVM takes priority!
+        if (graalHome == null || PluginUtils.isGraalVM()) {
+            graalHome = PluginUtils.getJavaHome();
+        }
+        return graalHome + "/bin/native-image";
     }
 
     private static void ensureNativeImageAvailable(Project project) {
-        if (!PluginUtils.isGraalVM()) {
-            throw new IllegalStateException("Not running on GraalVM. Native image not available.");
+        String graalHome = PluginUtils.getGraalHome();
+        if (graalHome != null && !PluginUtils.isGraalVM()) {
+            System.err.println("Not running on GraalVM, using native image from GRAALVM_HOME.");
+        }
+        if (graalHome == null && !PluginUtils.isGraalVM()) {
+            throw new IllegalStateException("Not running on GraalVM and GRAALVM_HOME not set. Native image not available.");
         }
         try {
             project.exec(exec -> {

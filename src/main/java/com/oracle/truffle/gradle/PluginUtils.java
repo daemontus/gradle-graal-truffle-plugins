@@ -36,6 +36,14 @@ class PluginUtils {
     }
 
     /**
+     * <p>Returns a path to current GraalVM home (if set).</p>
+     */
+    @Nullable
+    static String getGraalHome() {
+        return System.getenv("GRAALVM_HOME");
+    }
+
+    /**
      * <p>Execute the given action with the distributions container if distribution plugin is loaded,
      * otherwise do nothing.</p>
      */
