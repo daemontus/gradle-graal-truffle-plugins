@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+    id 'application'
+    id 'org.graalvm.plugin.compiler'
+}
+
+repositories { jcenter() }
+
+application { mainClassName 'foo.CheckCompiler' }
+
+graal { version '20.1.0' }
+
+task runCustom(type: JavaExec) {
+    main = 'foo.CheckCompiler'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+dependencies {
+    implementation "org.graalvm.sdk:graal-sdk:20.1.0"
+    implementation 'org.graalvm.truffle:truffle-api:20.1.0' // (enables interpreted mode)
+}
