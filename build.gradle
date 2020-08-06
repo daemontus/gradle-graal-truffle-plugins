@@ -21,17 +21,23 @@ pluginBundle {
 
 gradlePlugin {
     plugins {
-        create("compiler") { plugin ->
-            id = 'org.graalvm.plugin.compiler'
-            displayName = 'Graal Compiler Plugin'
-            description = 'Automatically enable Graal compiler on Hotspot JVMs and in distributions. Allow truffle languages as project dependencies.'
-            implementationClass = 'com.oracle.truffle.gradle.CompilerPlugin'
+        create("compiler") { PluginDeclaration plugin ->
+            plugin.id = 'org.graalvm.plugin.compiler'
+            plugin.displayName = 'Graal Compiler Plugin'
+            plugin.description = 'Automatically enable Graal compiler on Hotspot JVMs and in distributions. Allow truffle languages as project dependencies.'
+            plugin.implementationClass = 'com.oracle.truffle.gradle.CompilerPlugin'
         }
-        create("native-image") { plugin ->
-            id = 'org.graalvm.plugin.native-image'
-            displayName = 'Graal Native Image Plugin'
-            description = 'Declare NativeImage tasks for building native binaries of Java applications.'
-            implementationClass = "com.oracle.truffle.gradle.NativeImagePlugin"
+        create("native-image") { PluginDeclaration plugin ->
+            plugin.id = 'org.graalvm.plugin.native-image'
+            plugin.displayName = 'Graal Native Image Plugin'
+            plugin.description = 'Declare NativeImage tasks for building native binaries of Java applications.'
+            plugin.implementationClass = "com.oracle.truffle.gradle.NativeImagePlugin"
+        }
+        create("language") { PluginDeclaration plugin ->
+            plugin.id = 'org.graalvm.plugin.truffle-language'
+            plugin.displayName = 'Graal Language Plugin'
+            plugin.description = 'Configure the project as Graal&Truffle language.'
+            plugin.implementationClass = 'com.oracle.truffle.gradle.LanguagePlugin'
         }
     }
 }

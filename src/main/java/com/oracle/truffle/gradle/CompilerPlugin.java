@@ -4,8 +4,11 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.Copy;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.jvm.application.tasks.CreateStartScripts;
 import org.gradle.process.JavaForkOptions;
 
@@ -64,8 +67,8 @@ public class CompilerPlugin implements Plugin<Project> {
         this.setupGraalCompilerInDistributions(project);
 
         // Setup language dependency configurations
-        Configuration dynamicLanguages = this.setupLanguageDependencyConfigurations(project);
-        this.setupDynamicGraalLanguages(project, dynamicLanguages);
+        this.setupLanguageDependencyConfigurations(project);
+        this.setupDynamicGraalLanguages(project);
     }
 
     /* Create dependency, configuration and download task for the Graal compiler. */
@@ -139,30 +142,37 @@ public class CompilerPlugin implements Plugin<Project> {
     }
 
     /* Declares the `graalLanguage` and `installedGraalLanguage` configurations. */
-    private Configuration setupLanguageDependencyConfigurations(Project project) {
+    private void setupLanguageDependencyConfigurations(Project project) {
         Configuration graalLanguage = project.getConfigurations().create("language");
         graalLanguage.setVisible(true);
+        graalLanguage.setCanBeResolved(false);
         graalLanguage.setDescription("Graal languages which should be dynamically loaded.");
 
         Configuration installedGraalLanguage = project.getConfigurations().create("installedLanguage");
         installedGraalLanguage.setVisible(true);
+        installedGraalLanguage.setCanBeResolved(false);
         installedGraalLanguage.setDescription("Graal languages which are already installed by `gu`.");
 
-        Configuration runtime = project.getConfigurations().getByName("runtime");
+        Configuration truffleClasspath = project.getConfigurations().create("truffleClasspath");
+        truffleClasspath.setCanBeResolved(true);
+        truffleClasspath.extendsFrom(graalLanguage);
+
+        Configuration runtime = project.getConfigurations().getByName("runtimeClasspath");
         runtime.extendsFrom(graalLanguage);
         runtime.extendsFrom(installedGraalLanguage);
-
-        return graalLanguage;
     }
 
     /* Load dynamic (not-installed) Graal languages using truffle.class.path.append. */
-    private void setupDynamicGraalLanguages(Project project, Configuration dynamicLanguages) {
+    private void setupDynamicGraalLanguages(Project project) {
         // Update all fork tasks (relevant only if running on Graal):
         if (PluginUtils.isGraalVM()) {
             project.getTasks().all(task -> {
                 if (task instanceof JavaForkOptions) {
-                    JavaForkOptions opts = (JavaForkOptions) task;
-                    opts.systemProperty("truffle.class.path.append", dynamicLanguages.getAsPath());
+                    // Do this as the task executes to make sure truffle classpath can be resolved.
+                    task.doFirst(it -> {
+                        JavaForkOptions opts = (JavaForkOptions) task;
+                        opts.systemProperty("truffle.class.path.append", getTruffleClasspath(project, false).getAsPath());
+                    });
                 }
             });
         }
@@ -172,7 +182,7 @@ public class CompilerPlugin implements Plugin<Project> {
             // Build the truffle classpath for the start script. Note that this is different from the
             // runtime classpath used in Fork tasks, because here the path is relative to the APP_HOME folder.
             StringBuilder classpath = new StringBuilder();
-            for (File f : dynamicLanguages.getFiles()) {
+            for (File f : getTruffleClasspath(project, true).getFiles()) {
                 classpath.append("__APP_HOME__/lib/");
                 classpath.append(f.getName());
                 classpath.append(":");
@@ -208,6 +218,39 @@ public class CompilerPlugin implements Plugin<Project> {
                         "--upgrade-module-path=__APP_HOME__/graalCompiler/"
                 ))
         );
+    }
+
+    /*
+        In normal projects, truffle classpath is based on the truffleClasspath configuration. But if the language
+        plugin is also applied, we add other dependencies and sources as well.
+     */
+    private FileCollection getTruffleClasspath(Project project, boolean fromArchive) {
+        Configuration truffleClasspath = project.getConfigurations().findByName("truffleClasspath");
+        assert truffleClasspath != null;
+        if (!project.getPluginManager().hasPlugin("org.graalvm.plugin.truffle-language")) {
+            // Normal project
+            return truffleClasspath.fileCollection();
+        } else {
+            // Language project
+            FileCollection classpath = truffleClasspath.fileCollection();
+            // Add all runtime configuration files except for installed languages:
+            Configuration runtime = project.getConfigurations().getAt("runtimeClasspath");
+            for (Configuration cfg : runtime.getExtendsFrom()) {
+                if (cfg.getName().equals("installedLanguage")) continue;
+                classpath = classpath.plus(cfg.fileCollection());
+            }
+            if (fromArchive) {
+                // Running from compiled .jar, add jar location:
+                Task jar = project.getTasks().getAt("jar");
+                classpath = classpath.plus(jar.getOutputs().getFiles());
+            } else {
+                // Running from compiled .class files, get compiled files location:
+                JavaPluginConvention javaPlugin = project.getConvention().getPlugin(JavaPluginConvention.class);
+                SourceSet mainSources = javaPlugin.getSourceSets().getAt("main");
+                classpath = classpath.plus(mainSources.getOutput());
+            }
+            return classpath;
+        }
     }
 
 }

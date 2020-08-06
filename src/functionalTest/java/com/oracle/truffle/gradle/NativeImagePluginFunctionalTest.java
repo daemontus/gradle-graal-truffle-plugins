@@ -38,7 +38,7 @@ public class NativeImagePluginFunctionalTest {
                         "repositories { jcenter() }\n" +
                         "application { mainClassName 'package.Main' }\n" +
                         "task customNative(type: NativeImage) {\n" +
-                        "forJarFile = 'libs/myFancyJar.jar'\n" +
+                        "forJar 'libs/myFancyJar.jar'\n" +
                         "}\n").getBytes()
         );
 
@@ -50,7 +50,7 @@ public class NativeImagePluginFunctionalTest {
         runner.withProjectDir(projectDir);
         BuildResult result = runner.buildAndFail();
 
-        assertTrue(result.getOutput().contains("Not running on GraalVM. Native image not available."));
+        assertTrue(result.getOutput().contains("Not running on GraalVM and GRAALVM_HOME not set. Native image not available."));
     }
 
 }
