@@ -2,7 +2,6 @@ package com.oracle.truffle.gradle;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.plugins.ApplicationPluginConvention;
 
 import javax.annotation.Nonnull;
@@ -19,22 +18,26 @@ public class NativeImagePlugin implements Plugin<Project> {
 
     @Override
     public void apply(@Nonnull Project project) {
-        // We have to run this after evaluate because application plugin must be first applied.
-        project.afterEvaluate(it -> {
+        project.getPluginManager().withPlugin("application", appliedPlugin -> {
             Map<String, Object> plugins = project.getConvention().getPlugins();
-            if (plugins.containsKey("application")) {
-                Object applicationConvention = plugins.get("application");
-                if (!(applicationConvention instanceof ApplicationPluginConvention)) {
-                    System.err.println("Cannot automatically create distNative task.");
-                    System.err.println("Expected ApplicationPluginConvention, but found "+applicationConvention+".");
-                } else {
-                    ApplicationPluginConvention app = (ApplicationPluginConvention) applicationConvention;
-                    project.getTasks().create("distNative", NativeImage.class, task -> {
+            Object applicationConvention = plugins.get("application");
+            if (!(applicationConvention instanceof ApplicationPluginConvention)) {
+                System.err.println("Cannot automatically create distNative task.");
+                System.err.println("Expected ApplicationPluginConvention, but found "+applicationConvention+".");
+            } else {
+                ApplicationPluginConvention app = (ApplicationPluginConvention) applicationConvention;
+                project.getTasks().create("distNative", NativeImage.class, task -> task.doFirst(it -> {
+                    // Configure as a first step so that the user can pre-configure the task in the build script.
+                    if (task.getExecutable() == null) {
                         task.setForMainClass(app.getMainClassName());
+                    }
+                    if (task.getOutputName() == null) {
                         task.setOutputName(app.getApplicationName());
+                    }
+                    if (task.getOutputDir() == null) {
                         task.setOutputDir(new File(project.getBuildDir(), "distributions"));
-                    });
-                }
+                    }
+                }));
             }
         });
     }

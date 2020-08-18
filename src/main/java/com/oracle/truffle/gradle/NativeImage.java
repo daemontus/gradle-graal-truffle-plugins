@@ -1,7 +1,6 @@
 package com.oracle.truffle.gradle;
 
 import org.gradle.api.DefaultTask;
-import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
@@ -54,11 +53,19 @@ public class NativeImage extends DefaultTask {
     private final ListProperty<String> cmdArgs = getProject().getObjects().listProperty(String.class);
 
     public NativeImage() {
-        // Set default output directory and classpath
-        File outputDir = new File(getProject().getBuildDir(), "nativeImage");
-        this.outputDir.set(outputDir);
+        // Configure this when task starts so that the distNative task can be configured in the build script
+        // without defaults already present.
+        this.doFirst(it -> {
+            // Set default output directory and classpath
+            if (!this.outputDir.isPresent()) {
+                File outputDir = new File(getProject().getBuildDir(), "nativeImage");
+                this.outputDir.set(outputDir);
+            }
+            if (!this.outputName.isPresent()) {
+                this.outputName.set(this.getName());
+            }
+        });
         this.classpath.from(getDefaultClasspath());
-        this.outputName.set(this.getName());
         this.setGroup("graal");
         this.dependsOn("assemble"); // compile Java, Kotlin, whatever before running native image
     }
@@ -80,7 +87,7 @@ public class NativeImage extends DefaultTask {
      *
      * @return Directory with the compiled binary.
      */
-    @OutputDirectory
+    @Optional @OutputDirectory
     public File getOutputDir() {
         /*
             Note that we can't simply return the binary file itself, because:
@@ -89,7 +96,7 @@ public class NativeImage extends DefaultTask {
 
             Therefore we just mark the whole directory as output.
          */
-        return this.outputDir.getAsFile().get();
+        return this.outputDir.getAsFile().getOrNull();
     }
 
     /**
@@ -169,7 +176,7 @@ public class NativeImage extends DefaultTask {
      */
     @Input @Optional
     public Object getExecutable() {
-        return this.executable.get();
+        return this.executable.getOrNull();
     }
 
     /**
