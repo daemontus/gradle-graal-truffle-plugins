@@ -130,7 +130,7 @@ public class CompilerPlugin implements Plugin<Project> {
                     distribution.getContents().from(compilerConfig.getFiles(), spec -> spec.into("graalCompiler"))
             ));
 
-            // In all CreateStartScripts tasks, replace occurrences of __APP_HOME__ with teh appropriate
+            // In all CreateStartScripts tasks, replace occurrences of __APP_HOME__ with the appropriate
             // environment variable (this is also used in truffle language plugin).
             project.getTasks().withType(CreateStartScripts.class)
                     .all(CompilerPlugin::addReplaceAppHomeAction);
@@ -229,15 +229,15 @@ public class CompilerPlugin implements Plugin<Project> {
         assert truffleClasspath != null;
         if (!project.getPluginManager().hasPlugin("org.graalvm.plugin.truffle-language")) {
             // Normal project
-            return truffleClasspath.fileCollection();
+            return truffleClasspath;
         } else {
             // Language project
-            FileCollection classpath = truffleClasspath.fileCollection();
+            FileCollection classpath = truffleClasspath;
             // Add all runtime configuration files except for installed languages:
             Configuration runtime = project.getConfigurations().getAt("runtimeClasspath");
             for (Configuration cfg : runtime.getExtendsFrom()) {
                 if (cfg.getName().equals("installedLanguage")) continue;
-                classpath = classpath.plus(cfg.fileCollection());
+                classpath = classpath.plus(cfg);
             }
             if (fromArchive) {
                 // Running from compiled .jar, add jar location:
