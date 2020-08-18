@@ -1,73 +1,29 @@
 sudo: false
-language: java
+# Java is not yet supported on Windows, so the build would block.
+# You do not need any setup from Travis, use a plain bash build
+language: minimal
 
-cache:
-  directories:
-    - $HOME/.gradle
-
+os:
+  - linux
+  - osx
+  - windows
+env:
+  global:
+    - GRAVIS_REPO="https://github.com/DanySK/Gravis-CI.git"
+    - GRAVIS="$HOME/gravis"
+  matrix:
+    # List any JDK you want to build your software with.
+    # You can see the list of supported environments by installing Jabba and using ls-remote:
+    # https://github.com/shyiko/jabba#usage
+    - JDK="openjdk@1.11.0"
+    - JDK="graalvm@20.1.0"
+    - JDK="graalvm-ce-java11@20.1.0"
 before_install:
-  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
-
-# Sadly, install-jdk.sh seems to be broken with GraalVM on MacOS, so we install it manually.
-
-jobs:
-  include:
-    # Linux + OpenJDK 11
-    - os: linux
-      env:
-       - JDK='Open JDK 11'
-       - JAVA_HOME=$HOME/jdk
-      install:
-       - source ./install-jdk.sh --feature 11 --target $JAVA_HOME
-       - export PATH="$JAVA_HOME/bin:$PATH"
-    # Linux + GraalVM 20.1.0 @ Java 8
-    - os: linux
-      env:
-       - JDK='GraalVM 20.1.0 @ Java 8'
-       - JAVA_HOME=$HOME/jdk
-      install:
-       - source ./install-jdk.sh --target $JAVA_HOME --url "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-linux-amd64-20.1.0.tar.gz"
-       - export PATH="$JAVA_HOME/bin:$PATH"
-       - gu install native-image
-    # Linux + GraalVM 20.1.0 @ Java 11
-    - os: linux
-      env:
-       - JDK='GraalVM 20.1.0 @ Java 11'
-       - JAVA_HOME=$HOME/jdk
-      install:
-       - source ./install-jdk.sh --target $JAVA_HOME --url "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz"
-       - export PATH="$JAVA_HOME/bin:$PATH"
-       - gu install native-image
-    # MacOS + OpenJDK 11
-    - os: osx
-      env:
-       - JDK='Open JDK 11'
-       - JAVA_HOME=$HOME/jdk
-      install:
-       - source ./install-jdk.sh --feature 11 --target $JAVA_HOME
-       - export PATH="$JAVA_HOME/bin:$PATH"
-    # MacOS + GraalVM 20.1.0 @ Java 8
-    - os: osx
-      env:
-       - JDK='GraalVM 20.1.0 @ Java 8'
-       - JAVA_HOME=$HOME/jdk/Contents/Home
-      install:
-       - wget https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-darwin-amd64-20.1.0.tar.gz
-       - gunzip -c graalvm-ce-java8-darwin-amd64-20.1.0.tar.gz | tar xopf -
-       - mv graalvm-ce-java8-20.1.0 $HOME/jdk
-       - export PATH="$JAVA_HOME/bin:$PATH"
-       - gu install native-image
-    # MacOS + GraalVM 20.1.0 @ Java 11
-    - os: osx
-      env:
-       - JDK='GraalVM 20.1.0 @ Java 11'
-       - JAVA_HOME=$HOME/jdk/Contents/Home
-      install:
-       - wget "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-darwin-amd64-20.1.0.tar.gz"
-       - gunzip -c graalvm-ce-java11-darwin-amd64-20.1.0.tar.gz | tar xopf -
-       - mv graalvm-ce-java11-20.1.0 $HOME/jdk
-       - export PATH="$JAVA_HOME/bin:$PATH"
-       - gu install native-image
+  # Check out the script set
+  - travis_retry git clone --depth 1 $GRAVIS_REPO $GRAVIS
+  # Install the JDK you configured in the $JDK environment variable
+  # Never use travis_retry: hides failures. travis_retry is used internally where possible.
+  - source $GRAVIS/install-jdk
 
 script:
   - echo $JAVA_HOME
