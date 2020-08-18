@@ -13,6 +13,17 @@ import java.util.Objects;
 
 import static org.junit.Assert.*;
 
+/*
+    We have a test project `test-compiler-plugin` which has a main class that checks if polyglot engine
+    is Graal and if not, throws an error. The project then has an application plugin setup for this main class
+    as well as custom `JavaExec` task (`runCustom`) to execute this class.
+
+    We then test that:
+     - `clean` is runnable and removes the `build` directory
+     - [Hotspot] `run` and `runCustom` can be executed and do not fail due to missing Graal
+     - application scripts contain Graal compiler initialization
+     - application scripts can be executed and do not fail due to missing Graal
+ */
 public class CompilerPluginFunctionalTest {
 
     private final File projectDir = new File("src/functionalTest/project/test-compiler-plugin");

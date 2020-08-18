@@ -2,6 +2,7 @@ package com.oracle.truffle.gradle;
 
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 public class GraalCompilerPluginFunctionalTest {
 
-    @Test
+    @Test @Ignore
     public void canRunConfig() throws IOException {
         /*
             Create a fake test project which will:
