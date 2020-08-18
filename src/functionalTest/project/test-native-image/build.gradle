@@ -1,0 +1,27 @@
+plugins {
+    id 'java-library'
+    id 'application'
+    id 'org.graalvm.plugin.native-image'
+}
+
+repositories { jcenter() }
+
+application { mainClassName 'experiment.CheckNativeImage' }
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'experiment.CheckNativeImage'
+    }
+}
+
+distNative {
+    outputName 'customBinaryName'
+}
+
+task myBinaryClass(type: com.oracle.truffle.gradle.NativeImage) {
+    forMainClass 'experiment.CheckNativeImage'
+}
+
+task myBinaryJar(type: com.oracle.truffle.gradle.NativeImage) {
+    forJar jar
+}

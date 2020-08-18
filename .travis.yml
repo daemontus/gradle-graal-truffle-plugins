@@ -1,7 +1,8 @@
-sudo: false
 # Java is not yet supported on Windows, so the build would block.
 # You do not need any setup from Travis, use a plain bash build
-language: minimal
+language: shell
+
+dist: xenial
 
 os:
   - linux
@@ -11,7 +12,7 @@ env:
   global:
     - GRAVIS_REPO="https://github.com/DanySK/Gravis-CI.git"
     - GRAVIS="$HOME/gravis"
-  matrix:
+  jobs:
     # List any JDK you want to build your software with.
     # You can see the list of supported environments by installing Jabba and using ls-remote:
     # https://github.com/shyiko/jabba#usage
@@ -28,4 +29,5 @@ before_install:
 script:
   - echo $JAVA_HOME
   - java -Xmx32m -version
+  - (test -x $JAVA_HOME/bin/gu && $JAVA_HOME/bin/gu install native-image) || true
   - ./gradlew --no-daemon check

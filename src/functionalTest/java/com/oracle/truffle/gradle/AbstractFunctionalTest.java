@@ -35,7 +35,7 @@ public class AbstractFunctionalTest {
         GradleRunner runner = GradleRunner.create();
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments(args);
+        runner.withArguments(args, "--stacktrace");
         runner.withProjectDir(projectDir);
         if (fails) {
             return runner.buildAndFail();

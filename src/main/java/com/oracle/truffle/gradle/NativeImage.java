@@ -65,6 +65,8 @@ public class NativeImage extends DefaultTask {
                 this.outputName.set(this.getName());
             }
         });
+        // Ensure compilation runs after all configuration of default values is done.
+        this.doLast(it -> this.compileNativeImage());
         this.classpath.from(getDefaultClasspath());
         this.setGroup("graal");
         this.dependsOn("assemble"); // compile Java, Kotlin, whatever before running native image
@@ -237,7 +239,6 @@ public class NativeImage extends DefaultTask {
         return this.classpath.getFiles();
     }
 
-    @TaskAction
     public void compileNativeImage() {
         Project project = getProject();
         ensureNativeImageAvailable(project);
