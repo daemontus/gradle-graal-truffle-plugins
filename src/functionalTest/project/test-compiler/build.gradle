@@ -6,12 +6,12 @@ plugins {
 
 repositories { jcenter() }
 
-application { mainClassName 'foo.CheckCompiler' }
+application { mainClassName 'experiment.CheckCompiler' }
 
 graal { version '20.1.0' }
 
 task runCustom(type: JavaExec) {
-    main = 'foo.CheckCompiler'
+    main = 'experiment.CheckCompiler'
     classpath = sourceSets.main.runtimeClasspath
 }
 

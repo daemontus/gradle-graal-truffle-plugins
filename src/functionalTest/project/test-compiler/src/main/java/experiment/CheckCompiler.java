@@ -1,4 +1,4 @@
-package foo;
+package experiment;
 
 import org.graalvm.polyglot.Context;
 
