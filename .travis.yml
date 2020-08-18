@@ -1,0 +1,53 @@
+sudo: false
+language: java
+
+cache:
+  directories:
+    - $HOME/.gradle
+
+before_install:
+  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+
+jobs:
+  include:
+    # Linux + OpenJDK 11
+    - os: linux
+      env:
+       - JDK='Open JDK 11'
+       - JAVA_HOME=$TRAVIS_BUILD_DIR/jdk
+      install: source ./install-jdk.sh --feature 11 --target $JAVA_HOME
+    # Linux + GraalVM 20.1.0 @ Java 8
+    - os: linux
+      env:
+       - JDK='GraalVM 20.1.0 @ Java 8'
+       - JAVA_HOME=$TRAVIS_BUILD_DIR/jdk
+      install: source ./install-jdk.sh --target $JAVA_HOME --url "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-linux-amd64-20.1.0.tar.gz"
+    # Linux + GraalVM 20.1.0 @ Java 11
+    - os: linux
+      env:
+       - JDK='GraalVM 20.1.0 @ Java 11'
+       - JAVA_HOME=$TRAVIS_BUILD_DIR/jdk
+      install: source ./install-jdk.sh --target $JAVA_HOME --url "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz"
+    # MacOS + OpenJDK 11
+    - os: osx
+      env:
+       - JDK='Open JDK 11'
+       - JAVA_HOME=$TRAVIS_BUILD_DIR/jdk
+      install: source ./install-jdk.sh --feature 11 --target $JAVA_HOME
+    # MacOS + GraalVM 20.1.0 @ Java 8
+    - os: osx
+      env:
+       - JDK='GraalVM 20.1.0 @ Java 8'
+       - JAVA_HOME=$TRAVIS_BUILD_DIR/jdk
+      install: source ./install-jdk.sh --target $JAVA_HOME --url "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java8-darwin-amd64-20.1.0.tar.gz"
+    # MacOS + GraalVM 20.1.0 @ Java 11
+    - os: osx
+      env:
+       - JDK='GraalVM 20.1.0 @ Java 11'
+       - JAVA_HOME=$TRAVIS_BUILD_DIR/jdk
+      install: source ./install-jdk.sh --target $JAVA_HOME --url "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-darwin-amd64-20.1.0.tar.gz"
+
+script:
+  - export PATH="$JAVA_HOME/bin:$PATH"
+  - java -Xmx32m -version
+  - ./gradlew check
