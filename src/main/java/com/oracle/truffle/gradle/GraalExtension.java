@@ -12,6 +12,8 @@ public class GraalExtension {
     public static final String DEFAULT_GRAAL_VERSION = "20.1.0";
 
     private String version;
+    private String languageId;
+    private String languageName;
 
     private File compilerDir;
 
@@ -33,6 +35,8 @@ public class GraalExtension {
                 this.version = (String) versionCandidate;
             }
         }
+        // Init language name to project name.
+        this.languageName = project.getName();
     }
 
     /**
@@ -62,6 +66,32 @@ public class GraalExtension {
      */
     public void setVersion(@Nullable String version) {
         this.version = version;
+    }
+
+    /**
+     * @return The string id of a truffle language defined in this project (or null if this project
+     * is not a language project).
+     */
+    @Nullable
+    public String getLanguageId() {
+        return this.languageId;
+    }
+
+    /**
+     * Set the identifier of the language defined in this project.
+     * @param languageId string id
+     */
+    public void setLanguageId(@Nullable String languageId) {
+        this.languageId = languageId;
+    }
+
+    @Nonnull
+    public String getLanguageName() {
+        return this.languageName;
+    }
+
+    public void setLanguageName(@Nonnull String languageName) {
+        this.languageName = languageName;
     }
 
     /**

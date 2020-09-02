@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+    id 'application'
+    id 'org.graalvm.plugin.truffle-language'
+}
+
+application { mainClassName 'experiment.TestLanguage' }
+
+graal {
+    version '20.1.0'
+    languageId 'experiment.test'
+    languageName 'test'
+}
+
+repositories { jcenter() }
+
+dependencies {
+    implementation "org.graalvm.sdk:graal-sdk:20.1.0"
+    implementation 'org.graalvm.truffle:truffle-api:20.1.0'
+    annotationProcessor "org.graalvm.truffle:truffle-dsl-processor:20.1.0"
+}

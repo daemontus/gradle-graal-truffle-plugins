@@ -85,7 +85,7 @@ Graal language as a dependency](TODO).
 > Native image tasks only work when running on GraalVM or when `GRAALVM_HOME` 
 > points to a distribution of GraalVM with `native-image` installed. 
 
-Start by apllying the *Native Image Plugin* to your project:
+Start by applying the *Native Image Plugin* to your project:
  
 ```groovy
 plugins {
@@ -130,5 +130,47 @@ task compileAppFromJar(type: NativeImage) {
 
 task customJar(type: Jar) {
     /* ... some configuration ... */
+}
+```
+
+## Graal Language Plugin
+
+In order to develop new Graal languages, you can apply the *Graal Language Plugin* which will automatically configure
+your project:
+
+```groovy
+plugins {
+    id 'org.graalvm.plugin.truffle-language' version '$latest'
+}
+```
+
+After this, you have to specify your language name and id:
+
+```groovy
+graal {
+    version '20.1.0'
+    languageId 'my.awesome.langauge'    // required
+    langaugeName 'MyLangauge'           // defaults to project name
+}
+```
+
+This will perform several automatic steps:
+ - It will apply the compiler plugin so that your language works fast everywhere you want to use it.
+ - It will extend truffle classpath to include the classpath of the project to load the new language properly.
+ - It will create a `graalComponent` task, which generates `jar` files which can be installed using `gu`.
+ 
+> At the moment, `graalComponent` creates bundles compatible with the Java 11 versions of the GraalVM, support for 
+> the Java 8 variants is coming soon! 
+
+A project which has the language plugin applied can be then used as a `language` or `installedLanguage` dependencies
+in any project with the compiler plugin:
+
+```
+plugins {
+    id 'org.graalvm.plugin.compiler' version '$latest'
+}
+
+dependencies {
+    language ':myAwesomeLanguageProject'
 }
 ```

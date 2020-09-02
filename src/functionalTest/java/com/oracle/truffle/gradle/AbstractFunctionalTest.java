@@ -27,15 +27,19 @@ public class AbstractFunctionalTest {
         assertFalse(buildDir.exists());
     }
 
-    protected BuildResult runBuild(String args) {
-        return runBuild(args, false);
+    protected BuildResult runBuild(String... args) {
+        return runBuild(false, args);
     }
 
-    protected BuildResult runBuild(String args, boolean fails) {
+    protected BuildResult runFailingBuild(String... args) {
+        return runBuild(true, args);
+    }
+
+    private BuildResult runBuild(boolean fails, String... args) {
         GradleRunner runner = GradleRunner.create();
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments(args, "--stacktrace");
+        runner.withArguments(args);
         runner.withProjectDir(projectDir);
         if (fails) {
             return runner.buildAndFail();
